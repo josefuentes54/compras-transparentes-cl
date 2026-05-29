@@ -1,4 +1,4 @@
-# Mercado Público Dashboard
+# Compras Transparentes
 
 Plataforma de transparencia y análisis de compras públicas del Estado de Chile. Visualiza licitaciones, detecta anomalías y compara el desempeño de organismos usando datos de la [API oficial de ChileCompra](https://www.chilecompra.cl/api/).
 
@@ -59,26 +59,54 @@ src/
     └── types.ts           # Tipos TypeScript compartidos
 ```
 
-## Desarrollo
+## Instalación
+
+### Requisitos previos
+
+- [Node.js](https://nodejs.org/) 18 o superior
+- [npm](https://www.npmjs.com/) 9 o superior
+- Una base de datos PostgreSQL (recomendado: [Neon](https://neon.tech) o [Supabase](https://supabase.com) — ambos tienen plan gratuito)
+- Ticket de API de Mercado Público ([solicitar aquí](https://api.mercadopublico.cl/modules/IniciarSesion.aspx))
+
+### Pasos
+
+**1. Clonar el repositorio**
+
+```bash
+git clone https://github.com/josefuentes54/compras-transparentes-cl.git
+cd compras-transparentes-cl
+```
+
+**2. Instalar dependencias**
 
 ```bash
 npm install
-cp .env.example .env.local   # Completar variables
-npm run dev                  # http://localhost:3000
 ```
 
-## Variables de entorno
+**3. Configurar variables de entorno**
 
-```env
-# API Mercado Público (https://api.mercadopublico.cl)
-MERCADO_PUBLICO_TICKET=
+El proyecto incluye un archivo `.env` con las variables necesarias. Ábrelo y completa los valores:
 
-# Base de datos (Neon, Supabase o local)
-DATABASE_URL=
-
-# Protege el endpoint de sincronización
-CRON_SECRET=
+```bash
+# Abre .env y completa:
+MERCADO_PUBLICO_TICKET=   # Tu ticket de la API de Mercado Público
+DATABASE_URL=              # URL de conexión a PostgreSQL
+CRON_SECRET=               # Secreto para proteger el endpoint de sincronización
 ```
+
+Para generar un valor seguro para `CRON_SECRET`:
+
+```bash
+openssl rand -hex 32
+```
+
+**4. Ejecutar en desarrollo**
+
+```bash
+npm run dev
+```
+
+Abre [http://localhost:3000](http://localhost:3000) en tu navegador.
 
 ## Comandos
 

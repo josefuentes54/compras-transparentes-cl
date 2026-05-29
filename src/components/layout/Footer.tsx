@@ -11,7 +11,7 @@ export function Footer() {
         fontFamily: font,
       }}
     >
-      Fuente: API Mercado Público · ChileCompra · Datos simulados con fines demostrativos
+      Fuente: API ChileCompra · Datos simulados con fines demostrativos
     </footer>
   );
 }

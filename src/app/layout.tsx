@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Mercado Público Dashboard",
+  title: "Compras Transparentes",
   description: "Transparencia en compras públicas de Chile — datos desde la API de ChileCompra",
 };
 

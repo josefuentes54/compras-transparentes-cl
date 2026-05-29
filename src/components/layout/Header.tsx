@@ -44,10 +44,10 @@ export function Header({ onLogoClick }: HeaderProps) {
             color: "#fff",
           }}
         >
-          MP
+          CT
         </div>
         <span style={{ fontWeight: 700, fontSize: 16, letterSpacing: "-0.02em" }}>
-          Mercado Público
+          Compras Transparentes
         </span>
         <span style={{ fontSize: 12, color: C.t3, marginLeft: 4 }}>
           Transparencia en Compras del Estado

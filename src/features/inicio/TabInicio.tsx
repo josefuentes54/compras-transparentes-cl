@@ -45,7 +45,7 @@ export function TabInicio({ onNavigate }: TabInicioProps) {
             boxShadow: `0 8px 24px ${C.blue}30`,
           }}
         >
-          MP
+          CT
         </div>
         <h1
           style={{
@@ -62,7 +62,7 @@ export function TabInicio({ onNavigate }: TabInicioProps) {
           explicadas con datos
         </h1>
         <p style={{ fontSize: 17, color: C.t2, maxWidth: 620, margin: "0 auto 28px", lineHeight: 1.6 }}>
-          Más de $2.5 billones al año pasan por Mercado Público. Esta plataforma te muestra a dónde va ese
+          Más de $2.5 billones al año pasan por las compras del Estado. Esta plataforma te muestra a dónde va ese
           dinero, quién lo gasta y cómo puedes participar — todo desde la API oficial de ChileCompra.
         </p>
         <button
@@ -160,7 +160,7 @@ export function TabInicio({ onNavigate }: TabInicioProps) {
         <div>
           <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 4 }}>Datos en tiempo real desde la API oficial</div>
           <p style={{ fontSize: 14, color: C.t2, margin: 0, lineHeight: 1.55 }}>
-            Toda la información proviene de la API de Mercado Público de ChileCompra (
+            Toda la información proviene de la API de Compras Transparentes de ChileCompra (
             <span style={{ fontFamily: mono, fontSize: 12, color: C.blue }}>api.mercadopublico.cl</span>
             ). Los datos son públicos, gratuitos y se actualizan diariamente.
           </p>
@@ -172,7 +172,7 @@ export function TabInicio({ onNavigate }: TabInicioProps) {
         <Section title="¿Cómo funciona?" sub="Tres capas de procesamiento para transformar datos crudos en información útil">
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
             {[
-              { step: "1", title: "Ingesta diaria", desc: "Un proceso automático consulta la API de Mercado Público cada noche y descarga licitaciones y órdenes de compra del día.", color: C.blue },
+              { step: "1", title: "Ingesta diaria", desc: "Un proceso automático consulta la API de ChileCompra cada noche y descarga licitaciones y órdenes de compra del día.", color: C.blue },
               { step: "2", title: "Enriquecimiento", desc: "Cada licitación se clasifica por sector, región y rubro. Se calculan métricas de competencia, concentración y tendencias.", color: C.teal },
               { step: "3", title: "Visualización", desc: "Los datos procesados alimentan dashboards interactivos diseñados para cada tipo de usuario y necesidad.", color: C.green },
             ].map((s, i) => (

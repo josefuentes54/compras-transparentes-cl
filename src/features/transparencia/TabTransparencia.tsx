@@ -1,8 +1,9 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  AreaChart, Area, LineChart, Line, Cell,
+  AreaChart, Area, Cell,
 } from "recharts";
 import { C, cardStyle, ax, gr } from "@/lib/tokens";
 import { Section } from "@/components/common/Section";
@@ -11,21 +12,67 @@ import { Badge } from "@/components/common/Badge";
 import { ChartTooltip } from "@/components/common/ChartTooltip";
 import { transparenciaData } from "@/lib/data";
 
+type DiaData = {
+  dia: string;
+  total: number;
+  publicadas: number;
+  desiertas: number;
+};
+
+type ApiData = {
+  hoy: DiaData;
+  semana: DiaData[];
+};
+
+function SkeletonBar() {
+  return (
+    <div style={{ height: 16, borderRadius: 8, background: C.border, marginBottom: 8, animation: "pulse 1.5s infinite" }} />
+  );
+}
+
 export function TabTransparencia() {
+  const [data, setData] = useState<ApiData | null>(null);
+  const [loading, setLoading] = useState(true);
   const d = transparenciaData;
+
+  useEffect(() => {
+    fetch("/api/stats/transparencia")
+      .then((r) => r.json())
+      .then((json) => {
+        setData(json);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
+
+  const totalHoy = data?.hoy.total ?? 0;
+  const publicadasHoy = data?.hoy.publicadas ?? 0;
+  const desiertasHoy = data?.hoy.desiertas ?? 0;
+  const pctDesiertas = totalHoy > 0 ? ((desiertasHoy / totalHoy) * 100).toFixed(1) : "0";
 
   return (
     <>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 20 }}>
-        <Stat lbl="Licitaciones 1 oferente" value={10400} accent={C.red} sub="18% del total — riesgo" />
-        <Stat lbl="Desiertas" value={5187} accent={C.orange} sub="9% — bases mal diseñadas" />
-        <Stat lbl="Tratos directos" value={5150} accent={C.purple} sub="8.9% de las compras" />
-        <Stat lbl="Participación MiPyme" value={73} suffix="%" accent={C.green} sub="Meta: 80%" />
+        {loading ? (
+          Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} style={{ ...cardStyle, padding: 20 }}>
+              <SkeletonBar />
+              <SkeletonBar />
+            </div>
+          ))
+        ) : (
+          <>
+            <Stat lbl="Licitaciones hoy" value={totalHoy} accent={C.blue} sub="total publicado" />
+            <Stat lbl="Abiertas a ofertas" value={publicadasHoy} accent={C.green} sub={`${Math.round((publicadasHoy/totalHoy)*100)||0}% del total`} />
+            <Stat lbl="Desiertas hoy" value={desiertasHoy} accent={C.orange} sub={`${pctDesiertas}% — sin oferentes`} />
+            <Stat lbl="Participación MiPyme" value={73} suffix="%" accent={C.teal} sub="dato simulado · Meta: 80%" />
+          </>
+        )}
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 20 }}>
         <div style={cardStyle}>
-          <Section title="Señales de alerta" sub="Indicadores que merecen atención">
+          <Section title="Señales de alerta" sub="Indicadores estimados (datos simulados)">
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {d.anomalias.map((a, i) => (
                 <div
@@ -56,7 +103,7 @@ export function TabTransparencia() {
         </div>
 
         <div style={cardStyle}>
-          <Section title="Concentración por organismo" sub="% de licitaciones ganadas por un solo proveedor">
+          <Section title="Concentración por organismo" sub="% estimado por un solo proveedor (simulado)">
             <ResponsiveContainer width="100%" height={240}>
               <BarChart data={d.concentracion} layout="vertical" margin={{ left: 110 }}>
                 <CartesianGrid {...gr} horizontal={false} />
@@ -76,51 +123,68 @@ export function TabTransparencia() {
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
         <div style={cardStyle}>
-          <Section title="Licitaciones vs tratos directos" sub="Evolución mensual">
-            <ResponsiveContainer width="100%" height={200}>
-              <AreaChart data={d.tratosDirectos}>
-                <defs>
-                  <linearGradient id="gL" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={C.blue} stopOpacity={0.12} />
-                    <stop offset="100%" stopColor={C.blue} stopOpacity={0} />
-                  </linearGradient>
-                  <linearGradient id="gT" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={C.red} stopOpacity={0.12} />
-                    <stop offset="100%" stopColor={C.red} stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid {...gr} />
-                <XAxis dataKey="mes" tick={ax} axisLine={false} tickLine={false} />
-                <YAxis tick={ax} axisLine={false} tickLine={false} />
-                <Tooltip content={<ChartTooltip />} />
-                <Area type="monotone" dataKey="licitacion" stroke={C.blue} fill="url(#gL)" strokeWidth={2} name="Licitaciones" />
-                <Area type="monotone" dataKey="tratoDirecto" stroke={C.red} fill="url(#gT)" strokeWidth={2} name="Trato directo" />
-              </AreaChart>
-            </ResponsiveContainer>
+          <Section
+            title="Actividad semanal"
+            sub={loading ? "Cargando datos reales…" : "Licitaciones totales vs publicadas — últimos 7 días"}
+          >
+            {loading ? (
+              <div style={{ height: 200, display: "flex", alignItems: "center", justifyContent: "center", color: C.t3, fontSize: 14 }}>
+                Consultando API…
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height={200}>
+                <AreaChart data={data?.semana ?? []}>
+                  <defs>
+                    <linearGradient id="gT" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor={C.blue} stopOpacity={0.12} />
+                      <stop offset="100%" stopColor={C.blue} stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="gP" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor={C.green} stopOpacity={0.12} />
+                      <stop offset="100%" stopColor={C.green} stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid {...gr} />
+                  <XAxis dataKey="dia" tick={ax} axisLine={false} tickLine={false} />
+                  <YAxis tick={ax} axisLine={false} tickLine={false} />
+                  <Tooltip content={<ChartTooltip />} />
+                  <Area type="monotone" dataKey="total" stroke={C.blue} fill="url(#gT)" strokeWidth={2} name="Total" />
+                  <Area type="monotone" dataKey="publicadas" stroke={C.green} fill="url(#gP)" strokeWidth={2} name="Publicadas" />
+                </AreaChart>
+              </ResponsiveContainer>
+            )}
           </Section>
         </div>
 
         <div style={cardStyle}>
-          <Section title="Inclusión MiPymes" sub="% de adjudicaciones a micro, pequeñas y medianas empresas">
-            <ResponsiveContainer width="100%" height={200}>
-              <LineChart data={d.mipyme}>
-                <CartesianGrid {...gr} />
-                <XAxis dataKey="mes" tick={ax} axisLine={false} tickLine={false} />
-                <YAxis domain={[60, 85]} tick={ax} axisLine={false} tickLine={false} unit="%" />
-                <Tooltip content={<ChartTooltip />} />
-                <Line
-                  type="monotone"
-                  dataKey="pct"
-                  stroke={C.green}
-                  strokeWidth={2.5}
-                  dot={{ r: 3, fill: C.green, stroke: "#fff", strokeWidth: 2 }}
-                  name="% MiPymes"
-                />
-              </LineChart>
-            </ResponsiveContainer>
+          <Section
+            title="Desiertas por día"
+            sub={loading ? "Cargando…" : "Licitaciones sin oferentes — últimos 7 días"}
+          >
+            {loading ? (
+              <div style={{ height: 200, display: "flex", alignItems: "center", justifyContent: "center", color: C.t3, fontSize: 14 }}>
+                Consultando API…
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={data?.semana ?? []}>
+                  <CartesianGrid {...gr} />
+                  <XAxis dataKey="dia" tick={ax} axisLine={false} tickLine={false} />
+                  <YAxis tick={ax} axisLine={false} tickLine={false} />
+                  <Tooltip content={<ChartTooltip />} />
+                  <Bar dataKey="desiertas" radius={[6, 6, 0, 0]} name="Desiertas" fill={C.orange} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
           </Section>
         </div>
       </div>
+
+      {!loading && (
+        <div style={{ marginTop: 16, fontSize: 12, color: C.t3, textAlign: "right" }}>
+          Datos en tiempo real · API ChileCompra · Concentración y anomalías: estimados
+        </div>
+      )}
     </>
   );
 }
